@@ -14,8 +14,14 @@ contract HelperConfig is Script {
     string public constant SYMBOL = "MYNFT";
     string public constant BASE_URI =
         "ipfs://bafybeihgsbcbmy3k3iowwhwv2kabdnvwsp2tee5bfm5yzwjvw7roc52spm/";
+    string public constant BASIC_URI =
+        "ipfs://bafybeihtt3i4p37nhmxqgg2kqajhhz4fdxz5cxzvabc6jwxohwql3tojsa/";
+    string public constant TEAM_URI =
+        "ipfs://bafybeiah6bateni4elbsayl62o67zjjdozisy6qm6el2cpd3t224norxpa/";
+
     string public constant CONTRACT_URI =
         "ipfs://bafybeihgsbcbmy3k3iowwhwv2kabdnvwsp2tee5bfm5yzwjvw7roc52spm/";
+
     uint256 public constant MAX_SUPPLY = 1000;
 
     uint256 public constant TOKEN_FEE = 500 ether;
@@ -67,6 +73,8 @@ contract HelperConfig is Script {
                     feeAddress: 0x0cf66382d52C2D6c1D095c536c16c203117E2B2f,
                     tokenAddress: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,
                     baseURI: BASE_URI,
+                    basicURI: BASIC_URI,
+                    teamURI: TEAM_URI,
                     contractURI: CONTRACT_URI,
                     maxSupply: MAX_SUPPLY,
                     royaltyNumerator: ROYALTY
@@ -86,6 +94,8 @@ contract HelperConfig is Script {
                     feeAddress: 0x7Bb8be3D9015682d7AC0Ea377dC0c92B0ba152eF,
                     tokenAddress: 0xdcdF94053C9fCfe5BB7525c060B47Bbc6d166ce3,
                     baseURI: BASE_URI,
+                    basicURI: BASIC_URI,
+                    teamURI: TEAM_URI,
                     contractURI: CONTRACT_URI,
                     maxSupply: MAX_SUPPLY,
                     royaltyNumerator: ROYALTY
@@ -110,6 +120,8 @@ contract HelperConfig is Script {
                     feeAddress: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
                     tokenAddress: address(token),
                     baseURI: BASE_URI,
+                    basicURI: BASIC_URI,
+                    teamURI: TEAM_URI,
                     contractURI: CONTRACT_URI,
                     maxSupply: MAX_SUPPLY,
                     royaltyNumerator: ROYALTY

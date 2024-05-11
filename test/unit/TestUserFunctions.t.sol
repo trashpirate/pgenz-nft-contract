@@ -134,6 +134,47 @@ contract TestUserFunctions is Test {
         assertEq(token.balanceOf(nftContract.getFeeAddress()), tokenFee);
     }
 
+    function test__WhitelistedWalletMints() public funded(USER) unpaused {
+        address owner = nftContract.owner();
+
+        uint ethBalance = USER.balance;
+        uint tokenBalance = token.balanceOf(USER);
+
+        address[] memory accounts = new address[](1);
+        accounts[0] = USER;
+
+        vm.prank(owner);
+        nftContract.setWhitelist(accounts, 1);
+
+        uint256 quantity = 5;
+
+        vm.prank(USER);
+        nftContract.mint(quantity);
+
+        assertEq(nftContract.balanceOf(USER), 1);
+        assertEq(
+            nftContract.tokenURI(1),
+            string.concat(networkConfig.args.teamURI, "0")
+        );
+        assertEq(USER.balance, ethBalance);
+        assertEq(token.balanceOf(USER), tokenBalance);
+
+        // mints regular after claiming
+        uint256 ethFee = quantity * nftContract.getEthFee();
+        uint256 tokenFee = quantity * nftContract.getTokenFee();
+
+        vm.prank(USER);
+        nftContract.mint{value: ethFee}(quantity);
+
+        assertEq(nftContract.balanceOf(USER), 6);
+        assertEq(
+            nftContract.tokenURI(2),
+            string.concat(networkConfig.args.baseURI, "0")
+        );
+        assertEq(USER.balance, ethBalance - ethFee);
+        assertEq(token.balanceOf(USER), tokenBalance - tokenFee);
+    }
+
     function test__ChargesNoTokenFeeIfTokenFeeIsZero()
         public
         unpaused
@@ -207,7 +248,9 @@ contract TestUserFunctions is Test {
         vm.prank(USER);
         nftContract.mint{value: ethFee}(quantity);
 
-        assertEq(nftContract.getCounter(0), quantity);
+        assertEq(nftContract.getCounter(0), 0);
+        assertEq(nftContract.getCounter(1), 0);
+        assertEq(nftContract.getCounter(2), quantity);
     }
 
     function test__RandomizesSet() public funded(USER) unpaused {
@@ -215,6 +258,7 @@ contract TestUserFunctions is Test {
         vm.startPrank(owner);
         nftContract.setConfig(0, 10, 0, true, "set-0/");
         nftContract.setConfig(1, 5, 0, false, "set-1/");
+        nftContract.startSet(0);
         vm.stopPrank();
 
         uint256 fee = nftContract.getEthFee();
@@ -248,6 +292,7 @@ contract TestUserFunctions is Test {
         vm.startPrank(owner);
         nftContract.setConfig(0, 10, 0, false, "set-0/");
         nftContract.setConfig(1, 5, 0, false, "set-1/");
+        nftContract.startSet(0);
         vm.stopPrank();
 
         uint256 fee = nftContract.getEthFee();
@@ -355,7 +400,7 @@ contract TestUserFunctions is Test {
         unpaused
     {
         uint256 fee = nftContract.getEthFee();
-        uint256 maxSupply = nftContract.getMaxSupply(0);
+        uint256 maxSupply = nftContract.getMaxSupply(2);
 
         for (uint256 index = 0; index < maxSupply; index++) {
             vm.prank(USER);
@@ -426,6 +471,7 @@ contract TestUserFunctions is Test {
     function test__RetrieveTokenUri() public funded(USER) unpaused {
         uint256 ethFee = nftContract.getEthFee();
 
+        console.log(nftContract.getBaseURI(nftContract.getCurrentSet()));
         vm.prank(USER);
         nftContract.mint{value: ethFee}(1);
         assertEq(nftContract.balanceOf(USER), 1);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
+import {console} from "forge-std/Test.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -25,9 +26,17 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         address feeAddress;
         address tokenAddress;
         string baseURI;
+        string basicURI;
+        string teamURI;
         string contractURI;
         uint256 maxSupply;
         uint96 royaltyNumerator;
+    }
+
+    enum ListType {
+        Regular,
+        Team,
+        Basic
     }
 
     /**
@@ -55,6 +64,9 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
 
     uint256[] private s_ids;
 
+    mapping(address account => ListType) private s_whitelist;
+    mapping(address account => bool) private s_claimed;
+
     /**
      * Events
      */
@@ -71,6 +83,11 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         uint96 indexed royaltyNumerator
     );
     event MetadataUpdated(uint256 indexed tokenId);
+    event WhitelistUpdated(
+        address sender,
+        uint256 numAccounts,
+        uint256 whitelistId
+    );
 
     /**
      * Errors
@@ -117,14 +134,16 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         s_ethFee = args.ethFee;
         s_feeAddress = args.feeAddress;
         i_paymentToken = IERC20(args.tokenAddress);
-
         s_paused = true;
 
-        _setConfig(0, args.maxSupply, 0, true, args.baseURI);
+        _setConfig(0, 10, 0, false, args.teamURI);
+        _setConfig(1, 540, 0, false, args.basicURI);
+
+        _setConfig(2, args.maxSupply, 0, true, args.baseURI);
         _setContractURI(args.contractURI);
         _setDefaultRoyalty(args.feeAddress, args.royaltyNumerator);
 
-        _startSet(0);
+        _startSet(2);
         _transferOwnership(args.owner);
     }
 
@@ -137,22 +156,42 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         if (quantity == 0) revert NFTContract_InsufficientMintQuantity();
         if (quantity > s_batchLimit) revert NFTContract_ExceedsBatchLimit();
 
-        uint256 currentSet = s_currentSet;
-        if ((s_counter[currentSet] + quantity) > s_maxSupply[currentSet]) {
+        // mint NFTs
+        uint256 setId;
+        bool takeFee;
+        if (
+            s_whitelist[msg.sender] == ListType.Team && !s_claimed[msg.sender]
+        ) {
+            setId = 0;
+            quantity = 1;
+            s_claimed[msg.sender] = true;
+        } else if (
+            s_whitelist[msg.sender] == ListType.Basic && !s_claimed[msg.sender]
+        ) {
+            setId = 1;
+            quantity = 1;
+            s_claimed[msg.sender] = true;
+        } else {
+            takeFee = true;
+            setId = s_currentSet;
+        }
+
+        if ((s_counter[setId] + quantity) > s_maxSupply[setId]) {
             revert NFTContract_ExceedsMaxSupply();
         }
 
-        _mint(msg.sender, quantity);
-
         uint256 tokenId = _nextTokenId();
         for (uint256 i = 0; i < quantity; i++) {
-            _setTokenURI(tokenId, currentSet);
+            _setTokenURI(tokenId, setId);
             unchecked {
                 tokenId++;
             }
         }
 
-        if (s_tokenFee > 0) {
+        _mint(msg.sender, quantity);
+
+        // collect fees
+        if ((s_tokenFee > 0) && takeFee) {
             uint256 tokenFee = s_tokenFee * quantity;
             if (i_paymentToken.balanceOf(msg.sender) < tokenFee) {
                 revert NFTContract_InsufficientTokenBalance();
@@ -165,7 +204,7 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
             if (!success) revert NFTContract_TokenTransferFailed();
         }
 
-        if (s_ethFee > 0) {
+        if ((s_ethFee > 0) && takeFee) {
             uint256 ethFee = s_ethFee * quantity;
             if (msg.value < ethFee) {
                 revert NFTContract_InsufficientEthFee(msg.value, ethFee);
@@ -174,6 +213,19 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
             (bool success, ) = payable(s_feeAddress).call{value: ethFee}("");
             if (!success) revert NFTContract_EthTransferFailed();
         }
+    }
+
+    /// @notice Sets whitelist (only owner)
+    /// @param accounts to be added to whitelist
+    /// @param whitelistId id of whitelist (none = 0, team = 1, basic = 2)
+    function setWhitelist(
+        address[] calldata accounts,
+        uint256 whitelistId
+    ) external onlyOwner {
+        for (uint256 index = 0; index < accounts.length; index++) {
+            s_whitelist[accounts[index]] = ListType(whitelistId);
+        }
+        emit WhitelistUpdated(msg.sender, accounts.length, whitelistId);
     }
 
     /// @notice Sets minting fee in terms of ERC20 tokens (only owner)
@@ -315,9 +367,19 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         return _baseURI(set);
     }
 
-    /// @notice Gets base uri
+    /// @notice Gets current set
     function getCurrentSet() external view returns (uint256) {
         return s_currentSet;
+    }
+
+    /// @notice returns whitelist
+    function isWhitelisted(address account) external view returns (ListType) {
+        return s_whitelist[account];
+    }
+
+    /// @notice checks if claimed
+    function hasClaimed(address account) external view returns (bool) {
+        return s_claimed[account];
     }
 
     /// @notice Gets whether contract is paused
@@ -431,16 +493,15 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     function _setTokenURI(uint256 tokenId, uint256 set) private {
         s_set[tokenId] = set;
 
-        unchecked {
-            s_counter[set]++;
-        }
-
         if (s_randomized[set]) {
             s_tokenURINumber[tokenId] = _randomTokenURI();
         } else {
             s_tokenURINumber[tokenId] = s_counter[set];
         }
 
+        unchecked {
+            s_counter[set]++;
+        }
         emit MetadataUpdated(tokenId);
     }
 

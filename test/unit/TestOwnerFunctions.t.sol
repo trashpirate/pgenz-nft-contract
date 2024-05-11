@@ -40,6 +40,11 @@ contract TestUserFunctions is Test {
     event FeeAddressSet(address indexed sender, address feeAddress);
     event Paused(address indexed sender, bool isPaused);
     event SetStarted(address indexed sender, uint256 currentSet);
+    event WhitelistUpdated(
+        address sender,
+        uint256 numAccounts,
+        uint256 whitelistId
+    );
 
     // modifiers
     modifier skipFork() {
@@ -433,7 +438,7 @@ contract TestUserFunctions is Test {
         vm.expectRevert(NFTContract.NFTContract_SetAlreadyStarted.selector);
 
         vm.prank(owner);
-        nftContract.startSet(0);
+        nftContract.startSet(2);
     }
 
     function test__RevertWhen__SetNotConfigured() public {
@@ -441,7 +446,7 @@ contract TestUserFunctions is Test {
         vm.expectRevert(NFTContract.NFTContract_SetNotConfigured.selector);
 
         vm.prank(owner);
-        nftContract.startSet(1);
+        nftContract.startSet(3);
     }
 
     function test__RevertWhen__NotOwnerSetsCurrentSet() public {
@@ -454,6 +459,38 @@ contract TestUserFunctions is Test {
 
         vm.prank(USER);
         nftContract.startSet(2);
+    }
+
+    /** SET WHITELIST */
+
+    function test__SetWhitelist() public {
+        address owner = nftContract.owner();
+
+        address[] memory accounts = new address[](10);
+        for (uint256 index = 0; index < 10; index++) {
+            accounts[index] = vm.addr(index + 1);
+        }
+
+        vm.prank(owner);
+        nftContract.setWhitelist(accounts, 1);
+        assertEq(uint256(nftContract.isWhitelisted(vm.addr(1))), 1);
+        assertEq(uint256(nftContract.isWhitelisted(vm.addr(2))), 1);
+        assertEq(uint256(nftContract.isWhitelisted(vm.addr(3))), 1);
+    }
+
+    function test__EmitEvent__SetWhitelist() public {
+        address owner = nftContract.owner();
+
+        address[] memory accounts = new address[](10);
+        for (uint256 index = 0; index < 10; index++) {
+            accounts[index] = vm.addr(index + 1);
+        }
+
+        vm.expectEmit(true, true, true, true);
+        emit WhitelistUpdated(owner, accounts.length, 1);
+
+        vm.prank(owner);
+        nftContract.setWhitelist(accounts, 1);
     }
 
     /**

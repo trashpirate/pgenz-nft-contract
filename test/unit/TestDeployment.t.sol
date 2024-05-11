@@ -30,10 +30,12 @@ contract TestDeployment is Test {
      * INITIALIZATION
      */
     function test__Initialization() public {
-        assertEq(nftContract.getMaxSupply(0), networkConfig.args.maxSupply);
+        assertEq(nftContract.getMaxSupply(2), networkConfig.args.maxSupply);
 
         assertEq(nftContract.getFeeAddress(), networkConfig.args.feeAddress);
-        assertEq(nftContract.getBaseURI(0), networkConfig.args.baseURI);
+        assertEq(nftContract.getBaseURI(0), networkConfig.args.teamURI);
+        assertEq(nftContract.getBaseURI(1), networkConfig.args.basicURI);
+        assertEq(nftContract.getBaseURI(2), networkConfig.args.baseURI);
         assertEq(nftContract.contractURI(), networkConfig.args.contractURI);
 
         assertEq(nftContract.getBatchLimit(), 50);
