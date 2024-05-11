@@ -20,13 +20,13 @@ contract HelperConfig is Script {
         "ipfs://bafybeiah6bateni4elbsayl62o67zjjdozisy6qm6el2cpd3t224norxpa/";
 
     string public constant CONTRACT_URI =
-        "ipfs://bafybeihgsbcbmy3k3iowwhwv2kabdnvwsp2tee5bfm5yzwjvw7roc52spm/";
+        "ipfs://bafybeib54clqdiu6jz7lvcsxjy4sgxiiq5tlnpqvlnwqccp64tf5h7d574/contractMetadata";
 
     uint256 public constant MAX_SUPPLY = 1000;
 
-    uint256 public constant TOKEN_FEE = 500 ether;
+    uint256 public constant TOKEN_FEE = 0;
     uint256 public constant ETH_FEE = 0.05 ether;
-    uint96 public constant ROYALTY = 100;
+    uint96 public constant ROYALTY = 250;
 
     // chain configurations
     NetworkConfig public activeNetworkConfig;
@@ -36,17 +36,9 @@ contract HelperConfig is Script {
     }
 
     constructor() {
-        if (
-            block.chainid == 1 || block.chainid == 56 || block.chainid == 8453
-        ) {
+        if (block.chainid == 1 /** ethereum */) {
             activeNetworkConfig = getMainnetConfig();
-        } else if (
-            block.chainid == 11155111 ||
-            block.chainid == 97 ||
-            block.chainid == 84532 ||
-            block.chainid == 84531 ||
-            block.chainid == 80001
-        ) {
+        } else if (block.chainid == 11155111 /** sepolia */) {
             activeNetworkConfig = getTestnetConfig();
         } else {
             activeNetworkConfig = getAnvilConfig();
