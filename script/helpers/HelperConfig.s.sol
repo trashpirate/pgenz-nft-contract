@@ -24,7 +24,7 @@ contract HelperConfig is Script {
 
     uint256 public constant MAX_SUPPLY = 1940;
 
-    uint256 public constant TOKEN_FEE = 0;
+    uint256 public constant TOKEN_FEE = 1;
     uint256 public constant ETH_FEE = 0.05 ether;
     uint96 public constant ROYALTY = 250;
 

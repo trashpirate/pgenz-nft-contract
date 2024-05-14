@@ -1,18 +1,12 @@
-# NFT-CONTRACT 🔥
+# PGENZ NFT-CONTRACT 🔥
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)
 ![Forge](https://img.shields.io/badge/Forge-v0.2.0-blue?style=for-the-badge)
-[![License: MIT](https://img.shields.io/github/license/trashpirate/hold-earn.svg?style=for-the-badge)](https://github.com/trashpirate/hold-earn/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/github/license/trashpirate/pgenz-nft-contract.svg?style=for-the-badge)](https://github.com/trashpirate/pgenz-nft-contract/blob/master/LICENSE)
 
 [![Website: nadinaoates.com](https://img.shields.io/badge/Portfolio-00e0a7?style=for-the-badge&logo=Website)](https://nadinaoates.com)
 [![LinkedIn: nadinaoates](https://img.shields.io/badge/LinkedIn-0a66c2?style=for-the-badge&logo=LinkedIn&logoColor=f5f5f5)](https://linkedin.com/in/nadinaoates)
 [![Twitter: N0\_crypto](https://img.shields.io/badge/@N0\_crypto-black?style=for-the-badge&logo=X)](https://twitter.com/N0\_crypto)
-
-<!-- ![Node](https://img.shields.io/badge/node-v20.10.0-blue.svg?style=for-the-badge)
-![NPM](https://img.shields.io/badge/npm-v10.2.3-blue?style=for-the-badge)
-![Nextjs](https://img.shields.io/badge/next-v13.5.4-blue?style=for-the-badge)
-![Tailwindcss](https://img.shields.io/badge/TailwindCSS-v3.0-blue?style=for-the-badge)
-![Wagmi](https://img.shields.io/badge/Wagmi-v1.4.3-blue?style=for-the-badge) -->
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -40,7 +34,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Smart contract inheriting from ERC721A with a native and ERC20 token fee for minting including full deployment/testing suite using Foundry.
+![PigeonPark](https://github.com/trashpirate/pgenz-nft-contract/blob/master/title.png?raw=true)
+
+Smart contract inheriting from ERC721A with a native and ERC20 token fee for minting including full deployment/testing suite using Foundry. The NFT contract takes a token and a native token fee, implements whitelists, and allows to extend the collection via sets.
 
 ### Smart Contracts Testnet
 
@@ -149,8 +145,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## Contact
 
 Nadina Oates - [@N0_crypto](https://twitter.com/N0_crypto)
-
-
+Project Link: [https://pgenz-nft.vercel.app](https://pgenz-nft.vercel.app)
 
 <!-- ACKNOWLEDGMENTS -->
 <!-- ## Acknowledgments -->
