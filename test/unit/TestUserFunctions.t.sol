@@ -263,7 +263,7 @@ contract TestUserFunctions is Test {
 
         uint256 fee = nftContract.getEthFee();
 
-        uint256 maxSupply = nftContract.getMaxSupply(0);
+        uint256 maxSupply = 10;
         for (uint256 index = 0; index < maxSupply; index++) {
             vm.prank(USER);
             nftContract.mint{value: fee}(1);
@@ -276,7 +276,7 @@ contract TestUserFunctions is Test {
         vm.prank(owner);
         nftContract.startSet(1);
 
-        maxSupply = nftContract.getMaxSupply(1);
+        maxSupply = 5;
         for (uint256 index = 0; index < maxSupply; index++) {
             vm.prank(USER);
             nftContract.mint{value: fee}(1);
@@ -297,7 +297,7 @@ contract TestUserFunctions is Test {
 
         uint256 fee = nftContract.getEthFee();
 
-        uint256 maxSupply = nftContract.getMaxSupply(0);
+        uint256 maxSupply = 10;
         for (uint256 index = 0; index < maxSupply; index++) {
             vm.prank(USER);
             nftContract.mint{value: fee}(1);
@@ -310,7 +310,7 @@ contract TestUserFunctions is Test {
         vm.prank(owner);
         nftContract.startSet(1);
 
-        maxSupply = nftContract.getMaxSupply(1);
+        maxSupply = 5;
         for (uint256 index = 0; index < maxSupply; index++) {
             vm.prank(USER);
             nftContract.mint{value: fee}(1);
@@ -400,7 +400,7 @@ contract TestUserFunctions is Test {
         unpaused
     {
         uint256 fee = nftContract.getEthFee();
-        uint256 maxSupply = nftContract.getMaxSupply(2);
+        uint256 maxSupply = 1940;
 
         for (uint256 index = 0; index < maxSupply; index++) {
             vm.prank(USER);
@@ -488,7 +488,7 @@ contract TestUserFunctions is Test {
         roll = bound(roll, 0, 100000000000);
         TestHelper testHelper = new TestHelper();
 
-        uint256 maxSupply = nftContract.getMaxSupply(0);
+        uint256 maxSupply = 1940;
 
         vm.startPrank(USER);
         for (uint256 index = 0; index < maxSupply; index++) {

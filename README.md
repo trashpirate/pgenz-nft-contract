@@ -44,8 +44,19 @@ Smart contract inheriting from ERC721A with a native and ERC20 token fee for min
 
 ### Smart Contracts Testnet
 
+**Token Contract**  
+https://sepolia.etherscan.io/address/0xfda030107eb1de41ae233992c84a6e9c99d3ca34
+
 **NFT Contract**  
-https://sepolia.etherscan.io/address/0x5ef643256066f97470c3da94fd322856a6d69878 
+https://sepolia.etherscan.io/address/0xd5c933fb3aa049d8f8ebcb60ed2fed40b9c3d9fe
+
+### Smart Contracts Mainnet
+
+**Token Contract**  
+https://etherscan.io/token/0x2d17b511a85b401980cc0fed15a8d57fdb8eec60
+
+**NFT Contract**  
+https://etherscan.io/address/0x5fa4239c387c6fa089935783176019ae2c112354
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -54,11 +65,11 @@ https://sepolia.etherscan.io/address/0x5ef643256066f97470c3da94fd322856a6d69878
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/trashpirate/nft-contract.git
+   git clone https://github.com/trashpirate/pgenz-nft-contract.git
    ```
 2. Navigate to the project directory
    ```sh
-   cd nft-contract
+   cd pgenz-nft-contract
    ```
 3. Install Foundry submodules
    ```sh

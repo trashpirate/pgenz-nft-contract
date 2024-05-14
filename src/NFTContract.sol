@@ -1,7 +1,14 @@
+/**
+
+PGENZ Collection
+Website: https://pigeonpark.xyz
+Telegram: https://pigeonpark.xyz/
+Twitter: https://twitter.com/pigeonparketh
+
+*/
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
-import {console} from "forge-std/Test.sol";
-
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -56,11 +63,11 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     uint256 s_currentSet;
 
     mapping(uint256 tokenId => uint256) private s_set;
-    mapping(uint256 set => bool) private s_randomized;
-    mapping(uint256 set => uint256) private s_counter;
-    mapping(uint256 set => uint256) private s_maxSupply;
+    mapping(uint256 setId => bool) private s_randomized;
+    mapping(uint256 setId => uint256) private s_counter;
+    mapping(uint256 setId => uint256) private s_size;
     mapping(uint256 tokenId => uint256) private s_tokenURINumber;
-    mapping(uint256 set => string) private s_baseURI;
+    mapping(uint256 setId => string) private s_baseURI;
 
     uint256[] private s_ids;
 
@@ -75,9 +82,9 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     event EthFeeSet(address indexed sender, uint256 fee);
     event FeeAddressSet(address indexed sender, address feeAddress);
     event BatchLimitSet(address indexed sender, uint256 batchLimit);
-    event BaseURIUpdated(address indexed sender, uint256 set, string baseUri);
+    event BaseURIUpdated(address indexed sender, uint256 setId, string baseUri);
     event SetStarted(address indexed sender, uint256 currentSet);
-    event ContractURIUpdated(string indexed contractUri);
+    event ContractURIUpdated(address indexed sender, string contractUri);
     event RoyaltyUpdated(
         address indexed feeAddress,
         uint96 indexed royaltyNumerator
@@ -119,8 +126,10 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     ///                     feeAddress: address for fees
     ///                     tokenAddress: ERC20 token address
     ///                     baseURI: base uri
+    ///                     basicURI: uri for PGEN mints
+    ///                     teamURI: uri for team mints
     ///                     contractURI: contract uri
-    ///                     maxSupply: maximum nfts mintable
+    ///                     maxSupply: maximum nfts mintable for first set
     ///                     royaltyNumerator: basis points for royalty fees
     constructor(
         ConstructorArguments memory args
@@ -136,7 +145,7 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         i_paymentToken = IERC20(args.tokenAddress);
         s_paused = true;
 
-        _setConfig(0, 10, 0, false, args.teamURI);
+        _setConfig(0, 20, 0, false, args.teamURI);
         _setConfig(1, 540, 0, false, args.basicURI);
 
         _setConfig(2, args.maxSupply, 0, true, args.baseURI);
@@ -156,9 +165,9 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         if (quantity == 0) revert NFTContract_InsufficientMintQuantity();
         if (quantity > s_batchLimit) revert NFTContract_ExceedsBatchLimit();
 
-        // mint NFTs
+        // whitelists
         uint256 setId;
-        bool takeFee;
+        bool takeFee = false;
         if (
             s_whitelist[msg.sender] == ListType.Team && !s_claimed[msg.sender]
         ) {
@@ -176,10 +185,11 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
             setId = s_currentSet;
         }
 
-        if ((s_counter[setId] + quantity) > s_maxSupply[setId]) {
+        if ((s_counter[setId] + quantity) > s_size[setId]) {
             revert NFTContract_ExceedsMaxSupply();
         }
 
+        // mint nfts
         uint256 tokenId = _nextTokenId();
         for (uint256 i = 0; i < quantity; i++) {
             _setTokenURI(tokenId, setId);
@@ -217,6 +227,8 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
 
     /// @notice Sets whitelist (only owner)
     /// @param accounts to be added to whitelist
+    /// @dev Use this to whitelist wallets: whitelistId = 0 (not whitelisted), = 1 (team), = 2 (basic/PGEN) !!! only 1 whitelist per wallet !!!
+    /// @param accounts addresses to be whitelisted
     /// @param whitelistId id of whitelist (none = 0, team = 1, basic = 2)
     function setWhitelist(
         address[] calldata accounts,
@@ -274,7 +286,7 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         if (!success) revert NFTContract_TokenTransferFailed();
     }
 
-    /// @notice Withdraw ETH from contract (only owner)
+    /// @notice Withdraws ETH from contract (only owner)
     /// @param receiverAddress ETH withdrawn to this address
     /// @return success of withdrawal
     function withdrawETH(
@@ -285,18 +297,26 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         if (!success) revert NFTContract_EthTransferFailed();
     }
 
-    /// @notice Sets base Uri for set
-    /// @param set to be updated
+    /// @notice Sets configuration for set
+    /// @param setId to be updated
     /// @param counter counter for this set
+    /// @param size size of the set
+    /// @param randomized whether set should be randomized or not
     /// @param baseURI base uri
     function setConfig(
-        uint256 set,
-        uint256 maxSupply,
+        uint256 setId,
+        uint256 size,
         uint256 counter,
         bool randomized,
         string memory baseURI
     ) external onlyOwner {
-        _setConfig(set, maxSupply, counter, randomized, baseURI);
+        _setConfig(setId, size, counter, randomized, baseURI);
+    }
+
+    /// @notice Sets contract uri
+    /// @param _contractURI contract uri for contract metadata
+    function setContractURI(string memory _contractURI) external onlyOwner {
+        _setContractURI(_contractURI);
     }
 
     /// @notice Sets royalty
@@ -310,10 +330,10 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         emit RoyaltyUpdated(feeAddress, royaltyNumerator);
     }
 
-    /// @notice Sets current set
-    /// @param setNumber number of current set
-    function startSet(uint256 setNumber) external onlyOwner {
-        _startSet(setNumber);
+    /// @notice Starts new set
+    /// @param setId number of current set
+    function startSet(uint256 setId) external onlyOwner {
+        _startSet(setId);
     }
 
     /// @notice Pauses minting
@@ -333,13 +353,17 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     }
 
     /// @notice Gets maximum supply
-    function getMaxSupply(uint256 set) external view returns (uint256) {
-        return s_maxSupply[set];
+    function getMaxSupply() external view returns (uint256) {
+        uint256 maxSupply;
+        for (uint256 index = 0; index <= s_currentSet; index++) {
+            maxSupply += s_size[index];
+        }
+        return maxSupply;
     }
 
     /// @notice Gets counter
-    function getCounter(uint256 set) external view returns (uint256) {
-        return s_counter[set];
+    function getCounter(uint256 setId) external view returns (uint256) {
+        return s_counter[setId];
     }
 
     /// @notice Gets minting token fee in ERC20
@@ -363,8 +387,14 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     }
 
     /// @notice Gets base uri
-    function getBaseURI(uint256 set) external view returns (string memory) {
-        return _baseURI(set);
+    /// @param setId set id
+    function getBaseURI(uint256 setId) external view returns (string memory) {
+        return _baseURI(setId);
+    }
+
+    /// @notice Gets contract uri
+    function getContractURI() external view returns (string memory) {
+        return s_contractURI;
     }
 
     /// @notice Gets current set
@@ -372,12 +402,12 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         return s_currentSet;
     }
 
-    /// @notice returns whitelist
+    /// @notice Returns whitelist
     function isWhitelisted(address account) external view returns (ListType) {
         return s_whitelist[account];
     }
 
-    /// @notice checks if claimed
+    /// @notice Returns if claimed
     function hasClaimed(address account) external view returns (bool) {
         return s_claimed[account];
     }
@@ -450,73 +480,76 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     }
 
     /// @notice Retrieves base uri
-    function _baseURI(uint256 set) internal view returns (string memory) {
-        return s_baseURI[set];
+    function _baseURI(uint256 setId) internal view returns (string memory) {
+        return s_baseURI[setId];
     }
 
-    /// @notice Sets base Uri for set
-    /// @param set to be updated
+    /// @notice Sets configuration for set
+    /// @param setId to be updated
+    /// @param size size of set
     /// @param counter counter for this set
+    /// @param randomized whether set should be randomized
     /// @param baseURI base uri
     function _setConfig(
-        uint256 set,
-        uint256 maxSupply,
+        uint256 setId,
+        uint256 size,
         uint256 counter,
         bool randomized,
         string memory baseURI
     ) private {
-        s_maxSupply[set] = maxSupply;
-        s_counter[set] = counter;
-        s_randomized[set] = randomized;
-        _setBaseURI(set, baseURI);
+        s_size[setId] = size;
+        s_counter[setId] = counter;
+        s_randomized[setId] = randomized;
+        _setBaseURI(setId, baseURI);
     }
 
     /// @notice Sets current set
-    /// @param setNumber number of current set
-    function _startSet(uint256 setNumber) private {
-        if (s_counter[setNumber] > 0) revert NFTContract_SetAlreadyStarted();
-        if (
-            bytes(s_baseURI[setNumber]).length == 0 ||
-            s_maxSupply[setNumber] == 0
-        ) revert NFTContract_SetNotConfigured();
+    /// @param setId number of current set
+    function _startSet(uint256 setId) private {
+        if (s_counter[setId] > 0) revert NFTContract_SetAlreadyStarted();
+        if (bytes(s_baseURI[setId]).length == 0 || s_size[setId] == 0)
+            revert NFTContract_SetNotConfigured();
 
-        if (s_randomized[setNumber]) {
+        if (s_randomized[setId]) {
             delete s_ids;
-            s_ids = new uint256[](s_maxSupply[setNumber]);
+            s_ids = new uint256[](s_size[setId]);
         }
-        s_currentSet = setNumber;
-        emit SetStarted(msg.sender, setNumber);
+        s_currentSet = setId;
+        emit SetStarted(msg.sender, setId);
     }
 
     /// @notice Checks if token owner exists
     /// @dev adapted code from openzeppelin ERC721URIStorage
-    function _setTokenURI(uint256 tokenId, uint256 set) private {
-        s_set[tokenId] = set;
+    /// @param tokenId tokenId of nft
+    /// @param setId setId
+    function _setTokenURI(uint256 tokenId, uint256 setId) private {
+        s_set[tokenId] = setId;
 
-        if (s_randomized[set]) {
+        if (s_randomized[setId]) {
             s_tokenURINumber[tokenId] = _randomTokenURI();
         } else {
-            s_tokenURINumber[tokenId] = s_counter[set];
+            s_tokenURINumber[tokenId] = s_counter[setId];
         }
 
         unchecked {
-            s_counter[set]++;
+            s_counter[setId]++;
         }
         emit MetadataUpdated(tokenId);
     }
 
     /// @notice Sets base uri
+    /// @param setId set number
     /// @param baseURI base uri for NFT metadata
-    function _setBaseURI(uint256 set, string memory baseURI) private {
-        s_baseURI[set] = baseURI;
-        emit BaseURIUpdated(msg.sender, set, baseURI);
+    function _setBaseURI(uint256 setId, string memory baseURI) private {
+        s_baseURI[setId] = baseURI;
+        emit BaseURIUpdated(msg.sender, setId, baseURI);
     }
 
     /// @notice Sets contract uri
     /// @param _contractURI contract uri for contract metadata
     function _setContractURI(string memory _contractURI) private {
         s_contractURI = _contractURI;
-        emit ContractURIUpdated(_contractURI);
+        emit ContractURIUpdated(msg.sender, _contractURI);
     }
 
     /// @notice generates a random tokenURI

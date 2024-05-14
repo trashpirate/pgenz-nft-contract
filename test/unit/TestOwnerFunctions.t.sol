@@ -40,6 +40,7 @@ contract TestUserFunctions is Test {
     event FeeAddressSet(address indexed sender, address feeAddress);
     event Paused(address indexed sender, bool isPaused);
     event SetStarted(address indexed sender, uint256 currentSet);
+    event ContractURIUpdated(address indexed sender, string contractUri);
     event WhitelistUpdated(
         address sender,
         uint256 numAccounts,
@@ -355,6 +356,43 @@ contract TestUserFunctions is Test {
 
         vm.prank(USER);
         nftContract.withdrawTokens(address(token), owner);
+    }
+
+    /**
+     * SET CONTRACT URI
+     */
+    function test__SetContractURI() public {
+        address owner = nftContract.owner();
+        string memory newContractURI = "new-contract-uri/";
+
+        vm.prank(owner);
+        nftContract.setContractURI(newContractURI);
+
+        assertEq(nftContract.getContractURI(), newContractURI);
+    }
+
+    function test__EmitEvent__SetContractURI() public {
+        address owner = nftContract.owner();
+        string memory newContractURI = "new-contract-uri/";
+
+        vm.expectEmit(true, true, true, true);
+        emit ContractURIUpdated(owner, newContractURI);
+
+        vm.prank(owner);
+        nftContract.setContractURI(newContractURI);
+    }
+
+    function test__RevertWhen__NotOwnerSetsContractURI() public {
+        string memory newContractURI = "new-contract-uri/";
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Ownable.OwnableUnauthorizedAccount.selector,
+                USER
+            )
+        );
+
+        vm.prank(USER);
+        nftContract.setContractURI(newContractURI);
     }
 
     /**

@@ -10,19 +10,19 @@ contract HelperConfig is Script {
     address public constant TOKENOWNER =
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-    string public constant NAME = "NFT Collection";
-    string public constant SYMBOL = "MYNFT";
+    string public constant NAME = "PigeonPark";
+    string public constant SYMBOL = "PGENZ";
     string public constant BASE_URI =
-        "ipfs://bafybeihgsbcbmy3k3iowwhwv2kabdnvwsp2tee5bfm5yzwjvw7roc52spm/";
+        "ipfs://bafybeih7jkpoqds2kt5mhkgzfmbxngvo2xhc2jsr4rrca3oqrxvwduf3za/";
     string public constant BASIC_URI =
-        "ipfs://bafybeihtt3i4p37nhmxqgg2kqajhhz4fdxz5cxzvabc6jwxohwql3tojsa/";
+        "ipfs://bafybeibhkj36dnnqpa66oek4t3kox7j2yzuaibqcwi5vqxhlh5sdswu5ia/";
     string public constant TEAM_URI =
-        "ipfs://bafybeiah6bateni4elbsayl62o67zjjdozisy6qm6el2cpd3t224norxpa/";
+        "ipfs://bafybeidtn2f7hwjsegds4aawkfuecre65zffqun6mmktzxbkb4gmcnremq/";
 
     string public constant CONTRACT_URI =
-        "ipfs://bafybeib54clqdiu6jz7lvcsxjy4sgxiiq5tlnpqvlnwqccp64tf5h7d574/contractMetadata";
+        "ipfs://bafybeigioiijicnv6mghzkml6ollohopcdvjvkvgjjghbjfvnwixkdd27m/contractMetadata";
 
-    uint256 public constant MAX_SUPPLY = 1000;
+    uint256 public constant MAX_SUPPLY = 1940;
 
     uint256 public constant TOKEN_FEE = 0;
     uint256 public constant ETH_FEE = 0.05 ether;
@@ -59,11 +59,11 @@ contract HelperConfig is Script {
                 args: NFTContract.ConstructorArguments({
                     name: NAME,
                     symbol: SYMBOL,
-                    owner: 0x4671a210C4CF44C43dC5E44DAf68e64D46cdc703,
+                    owner: 0xda65502E913e81544E54693EB0b8e950104951C8,
                     tokenFee: TOKEN_FEE,
                     ethFee: ETH_FEE,
-                    feeAddress: 0x0cf66382d52C2D6c1D095c536c16c203117E2B2f,
-                    tokenAddress: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,
+                    feeAddress: 0xF143532C28F73590a737FF20Ad34bC9758d70c56,
+                    tokenAddress: 0x2D17B511A85B401980CC0FEd15A8D57FDb8EEc60,
                     baseURI: BASE_URI,
                     basicURI: BASIC_URI,
                     teamURI: TEAM_URI,
@@ -84,7 +84,7 @@ contract HelperConfig is Script {
                     tokenFee: TOKEN_FEE,
                     ethFee: ETH_FEE,
                     feeAddress: 0x7Bb8be3D9015682d7AC0Ea377dC0c92B0ba152eF,
-                    tokenAddress: 0xdcdF94053C9fCfe5BB7525c060B47Bbc6d166ce3,
+                    tokenAddress: 0xfDA030107EB1de41aE233992c84A6e9C99d3Ca34,
                     baseURI: BASE_URI,
                     basicURI: BASIC_URI,
                     teamURI: TEAM_URI,

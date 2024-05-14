@@ -30,7 +30,7 @@ contract TestDeployment is Test {
      * INITIALIZATION
      */
     function test__Initialization() public {
-        assertEq(nftContract.getMaxSupply(2), networkConfig.args.maxSupply);
+        assertEq(nftContract.getMaxSupply(), 2500);
 
         assertEq(nftContract.getFeeAddress(), networkConfig.args.feeAddress);
         assertEq(nftContract.getBaseURI(0), networkConfig.args.teamURI);
