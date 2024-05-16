@@ -13,19 +13,19 @@ contract HelperConfig is Script {
     string public constant NAME = "PigeonPark";
     string public constant SYMBOL = "PGENZ";
     string public constant BASE_URI =
-        "ipfs://bafybeih7jkpoqds2kt5mhkgzfmbxngvo2xhc2jsr4rrca3oqrxvwduf3za/";
+        "ipfs://bafybeic62tid5g56nrbi3qrxyh665wstvq33rj45ukcqfvofmpneswkt4a/";
     string public constant BASIC_URI =
-        "ipfs://bafybeibhkj36dnnqpa66oek4t3kox7j2yzuaibqcwi5vqxhlh5sdswu5ia/";
+        "ipfs://bafybeie3cjfxqshzbhczbx4zmmhz3lnrsztd3b6ayeryebwhkzpsras4am/";
     string public constant TEAM_URI =
-        "ipfs://bafybeidtn2f7hwjsegds4aawkfuecre65zffqun6mmktzxbkb4gmcnremq/";
+        "ipfs://bafybeigt7kzsk5hchhhl4vuih7cmocdl5ru2qvriewj2ynf7oyzaadquni/";
 
     string public constant CONTRACT_URI =
         "ipfs://bafybeigioiijicnv6mghzkml6ollohopcdvjvkvgjjghbjfvnwixkdd27m/contractMetadata";
 
     uint256 public constant MAX_SUPPLY = 1940;
 
-    uint256 public constant TOKEN_FEE = 1;
-    uint256 public constant ETH_FEE = 0.05 ether;
+    uint256 public constant TOKEN_FEE = 0;
+    uint256 public constant ETH_FEE = 0.000001 ether;
     uint96 public constant ROYALTY = 250;
 
     // chain configurations

@@ -70,6 +70,7 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     mapping(uint256 setId => string) private s_baseURI;
 
     uint256[] private s_ids;
+    uint256 private s_nonce;
 
     mapping(address account => ListType) private s_whitelist;
     mapping(address account => bool) private s_claimed;
@@ -201,26 +202,30 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
         _mint(msg.sender, quantity);
 
         // collect fees
-        if ((s_tokenFee > 0) && takeFee) {
-            uint256 tokenFee = s_tokenFee * quantity;
-            if (i_paymentToken.balanceOf(msg.sender) < tokenFee) {
+        uint256 tokenFee = s_tokenFee;
+        if ((tokenFee > 0) && takeFee) {
+            uint256 totalTokenFee = tokenFee * quantity;
+            if (i_paymentToken.balanceOf(msg.sender) < totalTokenFee) {
                 revert NFTContract_InsufficientTokenBalance();
             }
             bool success = i_paymentToken.transferFrom(
                 msg.sender,
                 s_feeAddress,
-                tokenFee
+                totalTokenFee
             );
             if (!success) revert NFTContract_TokenTransferFailed();
         }
 
-        if ((s_ethFee > 0) && takeFee) {
-            uint256 ethFee = s_ethFee * quantity;
-            if (msg.value < ethFee) {
-                revert NFTContract_InsufficientEthFee(msg.value, ethFee);
+        uint256 ethFee = s_ethFee;
+        if ((ethFee > 0) && takeFee) {
+            uint256 totalEthFee = ethFee * quantity;
+            if (msg.value < totalEthFee) {
+                revert NFTContract_InsufficientEthFee(msg.value, totalEthFee);
             }
 
-            (bool success, ) = payable(s_feeAddress).call{value: ethFee}("");
+            (bool success, ) = payable(s_feeAddress).call{value: totalEthFee}(
+                ""
+            );
             if (!success) revert NFTContract_EthTransferFailed();
         }
     }
@@ -555,7 +560,9 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
     /// @notice generates a random tokenURI
     function _randomTokenURI() private returns (uint256 randomTokenURI) {
         uint256 numAvailableURIs = s_ids.length;
-        uint256 randIdx = block.prevrandao % numAvailableURIs;
+        uint256 randIdx = uint256(
+            keccak256(abi.encodePacked(block.prevrandao, s_nonce))
+        ) % numAvailableURIs;
 
         // get new and nonexisting random id
         randomTokenURI = (s_ids[randIdx] != 0) ? s_ids[randIdx] : randIdx;
@@ -565,5 +572,9 @@ contract NFTContract is ERC721A, ERC2981, ERC721ABurnable, Ownable {
             ? numAvailableURIs - 1
             : s_ids[numAvailableURIs - 1];
         s_ids.pop();
+
+        unchecked {
+            s_nonce++;
+        }
     }
 }

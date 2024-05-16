@@ -44,8 +44,8 @@ contract TestUserFunctions is Test {
     modifier skipFork() {
         if (block.chainid != 31337) {
             return;
-            _;
         }
+        _;
     }
 
     modifier funded(address account) {
@@ -105,9 +105,15 @@ contract TestUserFunctions is Test {
     function test__Mint(
         uint256 quantity,
         address account
-    ) public unpaused noBatchLimit funded(account) skipFork {
+    ) public unpaused noBatchLimit skipFork {
         quantity = bound(quantity, 1, nftContract.getBatchLimit());
         vm.assume(account != address(0));
+        vm.assume(account != nftContract.getFeeAddress());
+
+        fund(account);
+
+        uint256 feeEthBalance = nftContract.getFeeAddress().balance;
+        uint256 feeTokenBalance = token.balanceOf(nftContract.getFeeAddress());
 
         uint256 ethBalance = account.balance;
         uint256 tokenBalance = token.balanceOf(account);
@@ -121,7 +127,7 @@ contract TestUserFunctions is Test {
         assertEq(nftContract.balanceOf(account), quantity);
 
         // correct nft ownership
-        assertEq(nftContract.ownerOf(0), account);
+        assertEq(nftContract.ownerOf(1), account);
 
         // correct eth fee charged
         assertEq(account.balance, ethBalance - ethFee);
@@ -130,8 +136,11 @@ contract TestUserFunctions is Test {
         assertEq(token.balanceOf(account), tokenBalance - tokenFee);
 
         // fee sent to correct address
-        assertEq(nftContract.getFeeAddress().balance, ethFee);
-        assertEq(token.balanceOf(nftContract.getFeeAddress()), tokenFee);
+        assertEq(nftContract.getFeeAddress().balance, feeEthBalance + ethFee);
+        assertEq(
+            token.balanceOf(nftContract.getFeeAddress()),
+            feeTokenBalance + tokenFee
+        );
     }
 
     function test__WhitelistedWalletMints() public funded(USER) unpaused {
@@ -183,6 +192,10 @@ contract TestUserFunctions is Test {
     {
         uint256 quantity = 1;
 
+        address owner = nftContract.owner();
+        vm.prank(owner);
+        nftContract.setTokenFee(0);
+
         deal(USER, 1 ether);
         uint256 ethBalance = USER.balance;
         uint256 tokenBalance = token.balanceOf(USER);
@@ -195,7 +208,7 @@ contract TestUserFunctions is Test {
         assertEq(nftContract.balanceOf(USER), quantity);
 
         // correct nft ownership
-        assertEq(nftContract.ownerOf(0), USER);
+        assertEq(nftContract.ownerOf(1), USER);
 
         // correct eth fee charged
         assertEq(USER.balance, ethBalance - ethFee);
@@ -229,7 +242,7 @@ contract TestUserFunctions is Test {
         assertEq(nftContract.balanceOf(USER), 1);
 
         // correct nft ownership
-        assertEq(nftContract.ownerOf(0), USER);
+        assertEq(nftContract.ownerOf(1), USER);
 
         // correct eth fee charged
         assertEq(USER.balance, ethBalance);

@@ -30,8 +30,8 @@ contract TestInteractions is Test {
     modifier skipFork() {
         if (block.chainid != 31337) {
             return;
-            _;
         }
+        _;
     }
 
     modifier funded(address account) {
